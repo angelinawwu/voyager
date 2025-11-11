@@ -118,11 +118,11 @@ export const imageConfigs: ImageConfig[] = [
     src: '/images/structure-of-earth-31247834881-o.webp',
     alt: 'Structure of Earth',
     objectFit: 'contain',
-    scale: 1,
-    top: '0',
-    left: '0',
-    right: '0',
-    bottom: '0',
+    scale: 1.43,
+    top: '3%',
+    left: '-19%',
+    right: '19%',
+    bottom: '-3%',
   },
 ];
 
