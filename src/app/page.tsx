@@ -35,7 +35,7 @@ export default function Home() {
   return (
     <>
       {/* Spacer div to enable scrolling - adjust multiplier to match scrollPerImage above */}
-      <div style={{ height: `${imageConfigs.length * 25}vh` }} />
+      <div style={{ height: `${imageConfigs.length * 50}vh` }} />
 
       {/* Fixed container that holds all overlaid images */}
       <div className="fixed inset-0 bg-black">
