@@ -349,35 +349,45 @@ export default function Home() {
       />
 
       {/* Introduction Text - All sections overlap in the same centered position */}
-      <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
-        <motion.p
-          style={{ opacity: textSection1Opacity, maxWidth: '60rem' }}
-          className="absolute text-lg md:text-xl leading-relaxed font-light text-center text-white px-8"
-        >
-          {TEXTS[0]}
-        </motion.p>
+      <div className="fixed inset-0 flex items-center justify-center z-40 pointer-events-none">
+  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full max-w-2xl px-8 text-center">
+    <motion.div
+      style={{ opacity: textSection1Opacity }}
+      className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
+    >
+      <span className="text-lg md:text-xl leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+        {TEXTS[0]}
+      </span>
+    </motion.div>
 
-        <motion.p
-          style={{ opacity: textSection2Opacity, maxWidth: '60rem' }}
-          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white px-8"
-        >
-          {TEXTS[1]}
-        </motion.p>
+    <motion.div
+      style={{ opacity: textSection2Opacity }}
+      className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
+    >
+      <span className="text-base md:text-lg leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+        {TEXTS[1]}
+      </span>
+    </motion.div>
 
-        <motion.p
-          style={{ opacity: textSection3Opacity, maxWidth: '60rem' }}
-          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white px-8"
-        >
-          {TEXTS[2]}
-        </motion.p>
+    <motion.div
+      style={{ opacity: textSection3Opacity }}
+      className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
+    >
+      <span className="text-base md:text-lg leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+        {TEXTS[2]}
+      </span>
+    </motion.div>
 
-        <motion.p
-          style={{ opacity: textSection4Opacity, maxWidth: '60rem' }}
-          className="absolute text-base md:text-lg leading-relaxed font-light italic text-center text-white px-8"
-        >
-          {TEXTS[3]}
-        </motion.p>
-      </div>
+    <motion.div
+      style={{ opacity: textSection4Opacity }}
+      className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
+    >
+      <span className="text-base md:text-lg leading-relaxed font-light italic text-center text-white px-8 max-w-[60rem]">
+        {TEXTS[3]}
+      </span>
+    </motion.div>
+  </div>
+</div>
 
       {/* Vignette effect - darken and blur outside 100vh circle */}
       <div

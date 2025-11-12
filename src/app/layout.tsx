@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Instrument_Serif } from "next/font/google";
+import { Xanh_Mono } from "next/font/google";
 import "./globals.css";
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
+const xanhMono = Xanh_Mono({
+  variable: "--font-xanh-mono",
   subsets: ["latin"],
   weight: "400",
 });
@@ -20,9 +20,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body
-        className={`${instrumentSerif.variable} antialiased`}
-      >
+      <body className={`${xanhMono.variable} antialiased`}>
         {children}
       </body>
     </html>
