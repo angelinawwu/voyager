@@ -235,6 +235,7 @@ export default function Home() {
           <div className="fixed w-full h-full mix-blend-overlay z-999">
             <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover" />
           </div>
+          <div className="fixed w-full h-full bg-black -z-1"></div>
 
       {/* Scroll container - single container for useScroll to track */}
       <div
@@ -244,7 +245,7 @@ export default function Home() {
       />
 
       {/* Fixed container that holds all overlaid images */}
-      <div className="fixed inset-0 bg-black">
+      <div className="fixed inset-0 scale-90 bg-black">
         {imageConfigs.map((config, index) => {
           // Determine visibility based on current image index (which is always synced with scroll)
           // This ensures images show correctly even when scrolling back up
@@ -350,29 +351,29 @@ export default function Home() {
       {/* Introduction Text - All sections overlap in the same centered position */}
       <div className="fixed inset-0 pointer-events-none z-40 flex items-center justify-center">
         <motion.p
-          style={{ opacity: textSection1Opacity }}
-          className="absolute text-lg md:text-xl leading-relaxed font-light text-center text-white max-w-3xl px-8"
+          style={{ opacity: textSection1Opacity, maxWidth: '60rem' }}
+          className="absolute text-lg md:text-xl leading-relaxed font-light text-center text-white px-8"
         >
           {TEXTS[0]}
         </motion.p>
 
         <motion.p
-          style={{ opacity: textSection2Opacity }}
-          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white max-w-3xl px-8"
+          style={{ opacity: textSection2Opacity, maxWidth: '60rem' }}
+          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white px-8"
         >
           {TEXTS[1]}
         </motion.p>
 
         <motion.p
-          style={{ opacity: textSection3Opacity }}
-          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white max-w-3xl px-8"
+          style={{ opacity: textSection3Opacity, maxWidth: '60rem' }}
+          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white px-8"
         >
           {TEXTS[2]}
         </motion.p>
 
         <motion.p
-          style={{ opacity: textSection4Opacity }}
-          className="absolute text-base md:text-lg leading-relaxed font-light italic text-center text-white max-w-3xl px-8"
+          style={{ opacity: textSection4Opacity, maxWidth: '60rem' }}
+          className="absolute text-base md:text-lg leading-relaxed font-light italic text-center text-white px-8"
         >
           {TEXTS[3]}
         </motion.p>
@@ -380,9 +381,9 @@ export default function Home() {
 
       {/* Vignette effect - darken and blur outside 100vh circle */}
       <div
-        className="fixed inset-0 pointer-events-none z-20"
+        className="fixed inset-0 pointer-events-none scale-[0.92] z-20"
         style={{
-          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, rgba(0, 0, 0, 0.7) 52vh, black 65vh)',
+          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, black 52vh)',
         }}
       />
       
