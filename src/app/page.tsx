@@ -221,6 +221,22 @@ export default function Home() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [normalScrollHeight]);
 
+  // Hide scroll indicator when user reaches the end
+  useEffect(() => {
+    if (!showLanding) {
+      const scrollEnd = scrollYProgress.on('change', (latest) => {
+        // Hide indicator when scrolled to 95% or more
+        if (latest >= 0.98) {
+          setShowScrollIndicator(false);
+        } else {
+          setShowScrollIndicator(true);
+        }
+      });
+      
+      return () => scrollEnd();
+    }
+  }, [scrollYProgress, showLanding]);
+
   return (
     <>
       <AnimatePresence mode="wait">
