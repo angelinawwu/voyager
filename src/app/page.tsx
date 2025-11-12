@@ -5,8 +5,9 @@ import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { imageConfigs } from './imageConfig';
 
-const INTRO_TRANSITION_HEIGHT = 250; // 250vh for intro + transition
-const SCROLL_PER_IMAGE = 0.5; // 50vh per image after intro
+const INTRO_HEIGHT = 250; // 250vh for intro (first image rotates)
+const OUTRO_HEIGHT = 250; // 250vh for outro (last image rotates)
+const SCROLL_PER_IMAGE = 0.5; // 50vh per image for middle images
 
 const TEXTS = [
   "This is the Voyager Golden Record.",
@@ -20,9 +21,12 @@ export default function Home() {
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Calculate total height for scroll container
-  const introTransitionHeight = INTRO_TRANSITION_HEIGHT;
-  const normalScrollHeight = imageConfigs.length * SCROLL_PER_IMAGE * 100;
-  const totalScrollHeight = introTransitionHeight + normalScrollHeight;
+  // Images: first (intro, index 0), middle (normal scroll, indices 1-58), last (outro, index 59)
+  const middleImagesCount = imageConfigs.length - 2; // Exclude first and last
+  const introHeight = INTRO_HEIGHT;
+  const normalScrollHeight = middleImagesCount * SCROLL_PER_IMAGE * 100;
+  const outroHeight = OUTRO_HEIGHT;
+  const totalScrollHeight = introHeight + normalScrollHeight + outroHeight;
 
   // Scroll progress for entire container (0 to 1)
   const { scrollYProgress } = useScroll({
@@ -30,12 +34,20 @@ export default function Home() {
     offset: ['start start', 'end end'],
   });
   
-  // Map scroll progress to intro/transition phase (0-1 over first 250vh)
-  // When scrollYProgress reaches (introTransitionHeight / totalScrollHeight), intro is complete
-  const introProgressRatio = introTransitionHeight / totalScrollHeight;
+  // Map scroll progress to intro phase (0-1 over first 250vh)
+  const introProgressRatio = introHeight / totalScrollHeight;
   const introScrollProgress = useTransform(
     scrollYProgress,
     [0, introProgressRatio],
+    [0, 1],
+    { clamp: true }
+  );
+
+  // Map scroll progress to outro phase (0-1 over last 250vh)
+  const outroStart = (introHeight + normalScrollHeight) / totalScrollHeight;
+  const outroScrollProgress = useTransform(
+    scrollYProgress,
+    [outroStart, 1],
     [0, 1],
     { clamp: true }
   );
@@ -48,39 +60,49 @@ export default function Home() {
     [0, 0.5, 0.5, 0]
   );
 
-  // Text section opacities - only one visible at a time
-  // === Equal-duration scroll-based fades for all three text sections ===
-  const sectionCount = 3;
-  const sectionDuration = 1 / sectionCount; // each gets 1/3 of intro progress
+  // Text sections with longer hold times and minimal overlap
+  // Section 1: First 35% of intro
+  const textSection1Opacity = useTransform(
+    introScrollProgress,
+    [0, 0.05, 0.30, 0.35], // 5% fade in, 25% hold, 5% fade out
+    [0, 1, 1, 0]
+  );
 
-  // helper to make uniform fade in/out ranges
-  const fadeRange = (start: number) => [
-    start,
-    start + sectionDuration * 0.25,
-    start + sectionDuration * 0.75,
-    start + sectionDuration,
-  ];
+  // Section 2: Middle 35% of intro (30% to 65%)
+  const textSection2Opacity = useTransform(
+    introScrollProgress,
+    [0.30, 0.35, 0.60, 0.65], // Overlaps slightly with section 1/3 for smooth transition
+    [0, 1, 1, 0]
+  );
 
-  const fadeValues = [0, 1, 1, 0]; // fade in, hold, fade out
+  // Section 3: Last 35% of intro (60% to 95%)
+  const textSection3Opacity = useTransform(
+    introScrollProgress,
+    [0.60, 0.65, 0.90, 0.95], // Ends before intro completes to avoid overlap with image sequence
+    [0, 1, 1, 0]
+  );
 
-  const textSection1Opacity = useTransform(introScrollProgress, fadeRange(0.0), fadeValues);
-  const textSection2Opacity = useTransform(introScrollProgress, fadeRange(sectionDuration), fadeValues);
-  const textSection3Opacity = useTransform(introScrollProgress, fadeRange(sectionDuration * 2), fadeValues);
-
-  // Rotation: 360 degrees over intro/transition (0 to 1 scroll progress)
-  const rotationAngle = useTransform(introScrollProgress, [0, 1], [0, 360]);
-  
-  // Transform for first image: combine scale and rotation
+  // Rotation for first image: 360 degrees over intro phase
+  const introRotationAngle = useTransform(introScrollProgress, [0, 1], [0, 360]);
   const firstImageScale = imageConfigs[0]?.scale || 1;
   const firstImageTransform = useTransform(
-    rotationAngle,
+    introRotationAngle,
     (angle) => `scale(${firstImageScale}) rotate(${angle}deg)`
   );
 
-  // Handle scroll position for image visibility
-  const [scrollVh, setScrollVh] = useState(0);
+  // Rotation for last image: 360 degrees over outro phase
+  const outroRotationAngle = useTransform(outroScrollProgress, [0, 1], [0, 360]);
+  const lastImageScale = imageConfigs[imageConfigs.length - 1]?.scale || 1;
+  const lastImageTransform = useTransform(
+    outroRotationAngle,
+    (angle) => `scale(${lastImageScale}) rotate(${angle}deg)`
+  );
 
-  // Handle image switching after intro/transition
+  // Handle scroll position for image visibility and phase tracking
+  const [scrollVh, setScrollVh] = useState(0);
+  const [scrollPhase, setScrollPhase] = useState<'intro' | 'normal' | 'outro'>('intro');
+
+  // Handle image switching and phase detection
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -93,25 +115,39 @@ export default function Home() {
         setShowScrollIndicator(false);
       }
 
-      // Calculate image index after intro/transition
-      if (currentScrollVh >= INTRO_TRANSITION_HEIGHT) {
-        const scrollAfterIntro = scrollPosition - (INTRO_TRANSITION_HEIGHT / 100) * windowHeight;
+      // Determine current phase
+      const introEndVh = INTRO_HEIGHT;
+      const normalEndVh = INTRO_HEIGHT + normalScrollHeight;
+
+      if (currentScrollVh < introEndVh) {
+        setScrollPhase('intro');
+      } else if (currentScrollVh < normalEndVh) {
+        setScrollPhase('normal');
+        // Calculate image index for middle images (indices 1 to 58)
+        const scrollAfterIntro = scrollPosition - (INTRO_HEIGHT / 100) * windowHeight;
         const scrollPerImage = windowHeight * SCROLL_PER_IMAGE;
-        const imageIndex = Math.min(
-          Math.floor(scrollAfterIntro / scrollPerImage),
-          imageConfigs.length - 1
-        );
+        const middleImageIndex = Math.floor(scrollAfterIntro / scrollPerImage);
+        // Map to actual image indices: 1 to 58
+        const imageIndex = Math.min(middleImageIndex + 1, imageConfigs.length - 2);
         setCurrentImageIndex(imageIndex);
+      } else {
+        setScrollPhase('outro');
+        setCurrentImageIndex(imageConfigs.length - 1); // Last image
       }
     };
 
     window.addEventListener('scroll', handleScroll);
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [normalScrollHeight]);
 
   return (
     <>
+      {/* Grain filter overlay */}
+      <div className="fixed w-full h-full mix-blend-overlay z-999">
+        <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover" />
+      </div>
+
       {/* Scroll container - single container for useScroll to track */}
       <div
         ref={scrollContainerRef}
@@ -122,17 +158,31 @@ export default function Home() {
       {/* Fixed container that holds all overlaid images */}
       <div className="fixed inset-0 bg-black">
         {imageConfigs.map((config, index) => {
-          const isInIntroPhase = scrollVh < INTRO_TRANSITION_HEIGHT;
-          const isVisible = isInIntroPhase
-            ? index === 0
-            : currentImageIndex === index;
+          // Determine visibility based on phase
+          let isVisible = false;
+          if (scrollPhase === 'intro' && index === 0) {
+            isVisible = true; // First image during intro
+          } else if (scrollPhase === 'normal' && index === currentImageIndex) {
+            isVisible = true; // Middle images during normal scroll
+          } else if (scrollPhase === 'outro' && index === imageConfigs.length - 1) {
+            isVisible = true; // Last image during outro
+          }
 
-          // Apply rotation only to first image during intro/transition
-          const shouldRotate = index === 0 && isInIntroPhase;
+          // Determine if this image should rotate
+          const isFirstImageRotating = index === 0 && scrollPhase === 'intro';
+          const isLastImageRotating = index === imageConfigs.length - 1 && scrollPhase === 'outro';
+          const shouldRotate = isFirstImageRotating || isLastImageRotating;
           const scaleValue = config.scale || 1;
+          
+          // Apply filters to middle images (not first or last)
+          const isMiddleImage = index > 0 && index < imageConfigs.length - 1;
+          const filter = isMiddleImage 
+            ? 'grayscale(80%) blur(1px)' // Combine multiple filters here if needed
+            : 'none';
 
           if (shouldRotate) {
-            // First image with rotation - use motion.div with MotionValue transform
+            // First or last image with rotation - use motion.div with MotionValue transform
+            const transform = isFirstImageRotating ? firstImageTransform : lastImageTransform;
             return (
               <motion.div
                 key={config.src}
@@ -144,8 +194,9 @@ export default function Home() {
                   bottom: config.bottom,
                   opacity: isVisible ? 1 : 0,
                   pointerEvents: isVisible ? 'auto' : 'none',
-                  transform: firstImageTransform,
+                  transform,
                   transformOrigin: 'center center',
+                  filter, // Add filter here
                 }}
               >
                 <Image
@@ -160,7 +211,7 @@ export default function Home() {
             );
           }
 
-          // Other images - no rotation
+          // Middle images - no rotation
           return (
             <div
               key={config.src}
@@ -174,6 +225,7 @@ export default function Home() {
                 pointerEvents: isVisible ? 'auto' : 'none',
                 transform: `scale(${scaleValue})`,
                 transformOrigin: 'center center',
+                filter, // Add filter here
               }}
             >
               <Image
@@ -222,14 +274,21 @@ export default function Home() {
         </motion.p>
       </div>
 
-      {/* Temporary Guide Circle - 100vh diameter */}
+      {/* Vignette effect - darken and blur outside 100vh circle */}
       <div
-        className="fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 pointer-events-none z-50"
+        className="fixed inset-0 pointer-events-none z-20"
         style={{
-          width: '100vh',
-          height: '100vh',
-          border: '2px solid rgba(255, 0, 0, 0.5)',
-          borderRadius: '50%',
+          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, rgba(0, 0, 0, 0.7) 52vh)',
+        }}
+      />
+      
+      {/* Blur effect only outside 100vh circle */}
+      <div
+        className="fixed inset-0 pointer-events-none z-20"
+        style={{
+          backdropFilter: 'blur(10px)',
+          WebkitMaskImage: 'radial-gradient(circle at center, transparent 48vh, black 52vh)',
+          maskImage: 'radial-gradient(circle at center, transparent 48vh, black 52vh)',
         }}
       />
 
