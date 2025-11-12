@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react';
 import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { imageConfigs } from './imageConfig';
+import LandingPage from './LandingPage';
 
 const INTRO_HEIGHT = 250; // 250vh for intro (first image rotates)
 const OUTRO_HEIGHT = 250; // 250vh for outro (last image rotates)
@@ -16,8 +17,8 @@ const TEXTS = [
 ];
 
 export default function Home() {
+  const [showLanding, setShowLanding] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Calculate total height for scroll container
@@ -29,8 +30,9 @@ export default function Home() {
   const totalScrollHeight = introHeight + normalScrollHeight + outroHeight;
 
   // Scroll progress for entire container (0 to 1)
+  // Only initialize when landing page is hidden
   const { scrollYProgress } = useScroll({
-    target: scrollContainerRef,
+    target: showLanding ? undefined : scrollContainerRef,
     offset: ['start start', 'end end'],
   });
   
@@ -54,10 +56,23 @@ export default function Home() {
 
   // Use intro scroll progress for animations (clamped to intro phase)
   // Background opacity: fades in early, stays visible, then fades out
-  const backgroundOpacity = useTransform(
+  const introBackgroundOpacity = useTransform(
     introScrollProgress,
     [0.04, 0.08, 0.56, 0.8], // 10vh, 20vh, 140vh, 200vh out of 250vh
     [0, 0.5, 0.5, 0]
+  );
+
+  // Outro background opacity: fades in early, stays visible, then fades out
+  const outroBackgroundOpacity = useTransform(
+    outroScrollProgress,
+    [0.04, 0.08, 0.80, 0.95], // Similar timing to intro
+    [0, 0.5, 0.5, 0]
+  );
+
+  // Combined background opacity (intro + outro)
+  const backgroundOpacity = useTransform(
+    [introBackgroundOpacity, outroBackgroundOpacity],
+    ([intro, outro]) => Math.max(intro as number, outro as number)
   );
 
   // Text sections with longer hold times and minimal overlap
@@ -68,17 +83,17 @@ export default function Home() {
     [0, 1, 1, 0]
   );
 
-  // Section 2: Middle 35% of intro (30% to 65%)
+  // Section 2: Last part of intro (extends longer since section 3 moved to outro)
   const textSection2Opacity = useTransform(
     introScrollProgress,
-    [0.30, 0.35, 0.60, 0.65], // Overlaps slightly with section 1/3 for smooth transition
+    [0.30, 0.35, 0.90, 0.95], // Extended hold time, ends before intro completes
     [0, 1, 1, 0]
   );
 
-  // Section 3: Last 35% of intro (60% to 95%)
+  // Section 3: Outro text (appears with last rotating image)
   const textSection3Opacity = useTransform(
-    introScrollProgress,
-    [0.60, 0.65, 0.90, 0.95], // Ends before intro completes to avoid overlap with image sequence
+    outroScrollProgress,
+    [0, 0.05, 0.90, 0.95], // Fades in early during outro, holds, then fades out near end
     [0, 1, 1, 0]
   );
 
@@ -99,8 +114,55 @@ export default function Home() {
   );
 
   // Handle scroll position for image visibility and phase tracking
-  const [scrollVh, setScrollVh] = useState(0);
-  const [scrollPhase, setScrollPhase] = useState<'intro' | 'normal' | 'outro'>('intro');
+  const [scrollState, setScrollState] = useState<{
+    phase: 'intro' | 'normal' | 'outro';
+    imageIndex: number;
+    scrollVh: number;
+  }>({
+    phase: 'intro',
+    imageIndex: 0,
+    scrollVh: 0,
+  });
+
+  // Then extract the values:
+  const { imageIndex: currentImageIndex } = scrollState;
+
+  // Refs for audio functionality
+  const previousImageIndexRef = useRef<number>(-1);
+  const clickAudioRef = useRef<HTMLAudioElement | null>(null);
+
+  // Initialize audio element
+  useEffect(() => {
+    clickAudioRef.current = new Audio('/Click.wav');
+    clickAudioRef.current.volume = 0.5; // Set volume (0.0 to 1.0)
+    return () => {
+      if (clickAudioRef.current) {
+        clickAudioRef.current.pause();
+        clickAudioRef.current = null;
+      }
+    };
+  }, []);
+
+  // Play click sound when image index changes
+  useEffect(() => {
+    // Don't play sound on initial load
+    if (previousImageIndexRef.current === -1) {
+      previousImageIndexRef.current = currentImageIndex;
+      return;
+    }
+
+    // Only play sound if image actually changed
+    if (previousImageIndexRef.current !== currentImageIndex && clickAudioRef.current) {
+      // Reset audio to start and play
+      clickAudioRef.current.currentTime = 0;
+      clickAudioRef.current.play().catch((error) => {
+        // Ignore errors (e.g., user hasn't interacted with page yet)
+        console.log('Audio play failed:', error);
+      });
+    }
+
+    previousImageIndexRef.current = currentImageIndex;
+  }, [currentImageIndex]);
 
   // Handle image switching and phase detection
   useEffect(() => {
@@ -108,32 +170,39 @@ export default function Home() {
       const scrollPosition = window.scrollY;
       const windowHeight = window.innerHeight;
       const currentScrollVh = (scrollPosition / windowHeight) * 100;
-      setScrollVh(currentScrollVh);
 
-      // Hide indicator after any scroll
-      // if (scrollPosition > 50) {
-      //   setShowScrollIndicator(false);
-      // }
-
-      // Determine current phase
+      // Determine current phase and image index
       const introEndVh = INTRO_HEIGHT;
       const normalEndVh = INTRO_HEIGHT + normalScrollHeight;
+      let newImageIndex: number;
+      let newScrollPhase: 'intro' | 'normal' | 'outro';
 
-      if (currentScrollVh < introEndVh) {
-        setScrollPhase('intro');
-      } else if (currentScrollVh < normalEndVh) {
-        setScrollPhase('normal');
+      // Add small epsilon for floating point comparison
+      const epsilon = 0.01;
+
+      if (currentScrollVh < introEndVh - epsilon) {
+        newScrollPhase = 'intro';
+        newImageIndex = 0; // First image during intro
+      } else if (currentScrollVh < normalEndVh - epsilon) {
+        newScrollPhase = 'normal';
         // Calculate image index for middle images (indices 1 to 58)
         const scrollAfterIntro = scrollPosition - (INTRO_HEIGHT / 100) * windowHeight;
         const scrollPerImage = windowHeight * SCROLL_PER_IMAGE;
         const middleImageIndex = Math.floor(scrollAfterIntro / scrollPerImage);
         // Map to actual image indices: 1 to 58
-        const imageIndex = Math.min(middleImageIndex + 1, imageConfigs.length - 2);
-        setCurrentImageIndex(imageIndex);
+        // Clamp to valid range
+        newImageIndex = Math.min(Math.max(1, middleImageIndex + 1), imageConfigs.length - 2);
       } else {
-        setScrollPhase('outro');
-        setCurrentImageIndex(imageConfigs.length - 1); // Last image
+        newScrollPhase = 'outro';
+        newImageIndex = imageConfigs.length - 1; // Last image
       }
+
+      // Update all scroll state atomically
+      setScrollState({
+        phase: newScrollPhase,
+        imageIndex: newImageIndex,
+        scrollVh: currentScrollVh,
+      });
     };
 
     window.addEventListener('scroll', handleScroll);
@@ -143,10 +212,18 @@ export default function Home() {
 
   return (
     <>
-      {/* Grain filter overlay */}
-      <div className="fixed w-full h-full mix-blend-overlay z-999">
-        <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover" />
-      </div>
+      <AnimatePresence mode="wait">
+        {showLanding && (
+          <LandingPage onEnter={() => setShowLanding(false)} />
+        )}
+      </AnimatePresence>
+
+      {!showLanding && (
+        <>
+          {/* Grain filter overlay */}
+          <div className="fixed w-full h-full mix-blend-overlay z-999">
+            <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover" />
+          </div>
 
       {/* Scroll container - single container for useScroll to track */}
       <div
@@ -158,19 +235,16 @@ export default function Home() {
       {/* Fixed container that holds all overlaid images */}
       <div className="fixed inset-0 bg-black">
         {imageConfigs.map((config, index) => {
-          // Determine visibility based on phase
-          let isVisible = false;
-          if (scrollPhase === 'intro' && index === 0) {
-            isVisible = true; // First image during intro
-          } else if (scrollPhase === 'normal' && index === currentImageIndex) {
-            isVisible = true; // Middle images during normal scroll
-          } else if (scrollPhase === 'outro' && index === imageConfigs.length - 1) {
-            isVisible = true; // Last image during outro
-          }
+          // Determine visibility based on current image index (which is always synced with scroll)
+          // This ensures images show correctly even when scrolling back up
+          const isVisible = index === currentImageIndex;
 
           // Determine if this image should rotate
-          const isFirstImageRotating = index === 0 && scrollPhase === 'intro';
-          const isLastImageRotating = index === imageConfigs.length - 1 && scrollPhase === 'outro';
+          // Important: Check if image is visible AND if it's the first/last image, regardless of exact phase
+          const isFirstImage = index === 0;
+          const isLastImage = index === imageConfigs.length - 1;
+          const isFirstImageRotating = isFirstImage && isVisible;
+          const isLastImageRotating = isLastImage && isVisible;
           const shouldRotate = isFirstImageRotating || isLastImageRotating;
           const scaleValue = config.scale || 1;
           
@@ -192,11 +266,17 @@ export default function Home() {
                   left: config.left,
                   right: config.right,
                   bottom: config.bottom,
-                  opacity: isVisible ? 1 : 0,
                   pointerEvents: isVisible ? 'auto' : 'none',
                   transform,
                   transformOrigin: 'center center',
                   filter, // Add filter here
+                }}
+                animate={{
+                  opacity: isVisible ? 1 : 0,
+                }}
+                transition={{
+                  duration: 0.05, // Very quick fade (50ms) to match middle images
+                  ease: 'easeOut',
                 }}
               >
                 <Image
@@ -311,6 +391,8 @@ export default function Home() {
           </motion.div>
         )}
       </AnimatePresence>
+        </>
+      )}
     </>
   );
 }
