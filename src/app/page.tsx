@@ -21,6 +21,7 @@ const TEXTS = [
 export default function Home() {
   const [showLanding, setShowLanding] = useState(true);
   const [showScrollIndicator, setShowScrollIndicator] = useState(true);
+  const [vignetteSize, setVignetteSize] = useState<'100vh' | '100vw'>('100vh');
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   // Calculate total height for scroll container
@@ -241,6 +242,23 @@ export default function Home() {
     }
   }, [showLanding]);
 
+  // Detect screen orientation for vignette circle size
+  useEffect(() => {
+    const updateVignetteSize = () => {
+      const isPortrait = window.innerHeight > window.innerWidth;
+      setVignetteSize(isPortrait ? '100vw' : '100vh');
+    };
+
+    updateVignetteSize();
+    window.addEventListener('resize', updateVignetteSize);
+    window.addEventListener('orientationchange', updateVignetteSize);
+
+    return () => {
+      window.removeEventListener('resize', updateVignetteSize);
+      window.removeEventListener('orientationchange', updateVignetteSize);
+    };
+  }, []);
+
   // Hide scroll indicator when user reaches the end
   useEffect(() => {
     if (!showLanding) {
@@ -425,21 +443,21 @@ export default function Home() {
   </div>
 </div>
 
-      {/* Vignette effect - darken and blur outside 100vh circle */}
+      {/* Vignette effect - darken and blur outside circle that adapts to orientation */}
       <div
         className="fixed inset-0 pointer-events-none scale-[0.92] z-20"
         style={{
-          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, black 52vh)',
+          background: `radial-gradient(circle at center, transparent calc(0.45 * ${vignetteSize}), rgba(0, 0, 0, 0.4) calc(0.48 * ${vignetteSize}), black calc(0.52 * ${vignetteSize}))`,
         }}
       />
       
-      {/* Blur effect only outside 100vh circle */}
+      {/* Blur effect only outside circle that adapts to orientation */}
       <div
         className="fixed inset-0 pointer-events-none z-20"
         style={{
           backdropFilter: 'blur(10px)',
-          WebkitMaskImage: 'radial-gradient(circle at center, transparent 48vh, black 52vh)',
-          maskImage: 'radial-gradient(circle at center, transparent 48vh, black 52vh)',
+          WebkitMaskImage: `radial-gradient(circle at center, transparent calc(0.48 * ${vignetteSize}), black calc(0.52 * ${vignetteSize}))`,
+          maskImage: `radial-gradient(circle at center, transparent calc(0.48 * ${vignetteSize}), black calc(0.52 * ${vignetteSize}))`,
         }}
       />
 
