@@ -38,8 +38,8 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         transition={{ duration: 0.8, delay: 0.6, ease: [0.215, 0.61, 0.355, 1] }}
         onClick={onEnter}
         className="px-4 py-2 border border-white/50 text-white font-light tracking-wider
-                   hover:bg-white/10 hover:border-white/50 hover:scale-[1.01] rounded-md transition-all duration-200 ease-out
-                   backdrop-blur-[1px] text-sm md:text-base"
+                   bg-black/50 hover:bg-black/20 hover:border-white/50 hover:backdrop-blur-xs hover:scale-[1.01] rounded-md transition-all duration-200 ease-out
+                   backdrop-blur-[1px] text-sm md:text-base active:scale-[0.98]"
         style={{ fontFamily: 'var(--font-instrument-serif)' }}
       >
         click to explore
