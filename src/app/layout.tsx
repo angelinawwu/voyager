@@ -9,7 +9,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 export const metadata: Metadata = {
-  title: "Voyager Golden Record",
+  title: "the voyager golden record",
   description: "humanity's message to the universe",
 };
 

@@ -13,8 +13,8 @@ const SCROLL_PER_IMAGE = 0.5; // 50vh per image for middle images
 
 const TEXTS = [
   "This is the Voyager Golden Record.",
-  "In 1977, it was launched into space to represent humanity to intelligent life beyond Earth.",
-  "This is what Earth looks like, inscribed on a disk.",
+  "In 1977, it was launched into space in hopes that it would reach intelligent life beyond Earth.",
+  "This is what our home looks like.",
   '"This is a present from a small, distant world, a token of our sounds, our science, our images, our music, our thoughts and our feelings. We are attempting to survive our time so we may live into yours."',
 ];
 
@@ -57,10 +57,10 @@ export default function Home() {
   );
 
   // Background opacity: fades in early, stays visible, then fades out
-  // Adjusted for 500vh intro (double the original duration)
+  // Adjusted for 750vh intro (3 full rotations)
   const introBackgroundOpacity = useTransform(
     introScrollProgress,
-    [0.02, 0.04, 0.85, 0.98],
+    [0.013, 0.027, 0.90, 0.987], // 10vh, 20vh, 675vh, 740vh out of 750vh
     [0, 0.8, 0.8, 0]
   );
 
@@ -78,31 +78,38 @@ export default function Home() {
     ([intro, outro]) => Math.max(intro as number, outro as number)
   );
 
-  // Text sections: Each text gets one full rotation (250vh of scroll)
-  // Section 1: First 50% of intro (0-250vh = first full rotation)
+  // Text sections: Each intro text gets one full rotation (250vh of scroll)
+  // Section 1: First third of intro (0-250vh = first full rotation)
   const textSection1Opacity = useTransform(
     introScrollProgress,
-    [0, 0.02, 0.48, 0.50], // Fade in quickly, hold, fade out at midpoint
+    [0, 0.013, 0.32, 0.333], // 0vh, 10vh, 240vh, 250vh out of 750vh
     [0, 1, 1, 0]
   );
 
-  // Section 2: Second 50% of intro (250vh-500vh = second full rotation)
+  // Section 2: Second third of intro (250vh-500vh = second full rotation)
   const textSection2Opacity = useTransform(
     introScrollProgress,
-    [0.48, 0.50, 0.98, 1.0], // Fade in at midpoint, hold, fade out at end
+    [0.32, 0.333, 0.653, 0.667], // 240vh, 250vh, 490vh, 500vh out of 750vh
     [0, 1, 1, 0]
   );
 
-  // Section 3: Outro text (appears well into outro after last image is visible)
-  // With 500vh outro, delay 25% (125vh) then text visible for 250vh (one rotation worth)
+  // Section 3: Third third of intro (500vh-750vh = third full rotation)
   const textSection3Opacity = useTransform(
+    introScrollProgress,
+    [0.653, 0.667, 0.987, 1.0], // 490vh, 500vh, 740vh, 750vh out of 750vh
+    [0, 1, 1, 0]
+  );
+
+  // Section 4: Outro text (appears well into outro after last image is visible)
+  // With 500vh outro, delay 25% (125vh) then text visible for 250vh (one rotation worth)
+  const textSection4Opacity = useTransform(
     outroScrollProgress,
     [0.25, 0.27, 0.73, 0.75], // Start at 25% (125vh buffer), visible for middle 50% (250vh)
     [0, 1, 1, 0]
   );
 
-  // Rotation for first image: 720 degrees over 500vh intro (2 full rotations)
-  const introRotationAngle = useTransform(introScrollProgress, [0, 1], [0, 720]);
+  // Rotation for first image: 1080 degrees over 750vh intro (3 full rotations)
+  const introRotationAngle = useTransform(introScrollProgress, [0, 1], [0, 1080]);
   const firstImageScale = imageConfigs[0]?.scale || 1;
   const firstImageTransform = useTransform(
     introRotationAngle,
@@ -358,9 +365,16 @@ export default function Home() {
 
         <motion.p
           style={{ opacity: textSection3Opacity }}
-          className="absolute text-base md:text-lg leading-relaxed font-light italic text-center text-white max-w-3xl px-8"
+          className="absolute text-base md:text-lg leading-relaxed font-light text-center text-white max-w-3xl px-8"
         >
           {TEXTS[2]}
+        </motion.p>
+
+        <motion.p
+          style={{ opacity: textSection4Opacity }}
+          className="absolute text-base md:text-lg leading-relaxed font-light italic text-center text-white max-w-3xl px-8"
+        >
+          {TEXTS[3]}
         </motion.p>
       </div>
 
