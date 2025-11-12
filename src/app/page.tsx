@@ -417,7 +417,14 @@ export default function Home() {
             className="fixed bottom-8 items-center justify-center left-1/2 -translate-x-1/2 text-white text-sm font-light tracking-wide pointer-events-none z-50"
           >
             Scroll
+            <motion.div
+              initial={{ y: 0 }}
+              animate={{ y: [0, 10, 0] }}
+              exit={{ y: 0 }}
+              transition={{ repeat: Infinity, ease: 'easeInOut', duration: 1.5 }}
+            >
             <CaretDown size={20} className="text-white mx-auto self-center" />
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>
