@@ -391,7 +391,7 @@ export default function Home() {
       style={{ opacity: textSection1Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-lg md:text-xl leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-lg md:text-xl font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[0]}
       </span>
     </motion.div>
@@ -400,7 +400,7 @@ export default function Home() {
       style={{ opacity: textSection2Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-base md:text-lg font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[1]}
       </span>
     </motion.div>
@@ -409,7 +409,7 @@ export default function Home() {
       style={{ opacity: textSection3Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg leading-relaxed font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-base md:text-lg font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[2]}
       </span>
     </motion.div>
@@ -418,7 +418,7 @@ export default function Home() {
       style={{ opacity: textSection4Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg leading-relaxed font-light italic text-center text-white px-8 max-w-[60rem]">
+      <span className="text-base md:text-lg font-light italic text-center text-white px-8 max-w-[60rem]">
         {TEXTS[3]}
       </span>
     </motion.div>

@@ -22,6 +22,7 @@
 
 html {
   font-size: 2rem; /* Larger base font size */
+  line-height: 1;
 }
 
 body {
@@ -33,9 +34,4 @@ body {
 /* Hide scrollbar */
 ::-webkit-scrollbar {
   display: none;
-}
-
-html {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
