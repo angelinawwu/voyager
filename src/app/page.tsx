@@ -11,7 +11,7 @@ const SCROLL_PER_IMAGE = 0.5; // 50vh per image for middle images
 
 const TEXTS = [
   "This is the Voyager Golden Record.",
-  "In 1977, it was launched into space, with the intention of portraying humanity to intelligent extraterrestrial life.",
+  "In 1977, it was launched into space with the intention of portraying humanity to intelligent extraterrestrial life.",
   '"This is a present from a small, distant world, a token of our sounds, our science, our images, our music, our thoughts and our feelings. We are attempting to survive our time so we may live into yours."',
 ];
 
@@ -111,9 +111,9 @@ export default function Home() {
       setScrollVh(currentScrollVh);
 
       // Hide indicator after any scroll
-      if (scrollPosition > 50) {
-        setShowScrollIndicator(false);
-      }
+      // if (scrollPosition > 50) {
+      //   setShowScrollIndicator(false);
+      // }
 
       // Determine current phase
       const introEndVh = INTRO_HEIGHT;
@@ -213,7 +213,7 @@ export default function Home() {
 
           // Middle images - no rotation
           return (
-            <div
+            <motion.div
               key={config.src}
               className="absolute"
               style={{
@@ -221,11 +221,17 @@ export default function Home() {
                 left: config.left,
                 right: config.right,
                 bottom: config.bottom,
-                opacity: isVisible ? 1 : 0,
                 pointerEvents: isVisible ? 'auto' : 'none',
                 transform: `scale(${scaleValue})`,
                 transformOrigin: 'center center',
-                filter, // Add filter here
+                filter,
+              }}
+              animate={{
+                opacity: isVisible ? 1 : 0,
+              }}
+              transition={{
+                duration: 0.05, // Very quick fade (150ms)
+                ease: 'easeOut', // Smooth but quick transition
               }}
             >
               <Image
@@ -236,7 +242,7 @@ export default function Home() {
                 priority={index === 0}
                 quality={100}
               />
-            </div>
+            </motion.div>
           );
         })}
       </div>
@@ -245,7 +251,7 @@ export default function Home() {
       <motion.div
         className="fixed inset-0 pointer-events-none z-30"
         style={{
-          backgroundColor: 'rgba(0, 0, 0, 0.5)',
+          backgroundColor: 'rgba(0, 0, 0, 0.7)',
           opacity: backgroundOpacity,
         }}
       />
@@ -278,7 +284,7 @@ export default function Home() {
       <div
         className="fixed inset-0 pointer-events-none z-20"
         style={{
-          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, rgba(0, 0, 0, 0.7) 52vh)',
+          background: 'radial-gradient(circle at center, transparent 45vh, rgba(0, 0, 0, 0.4) 48vh, rgba(0, 0, 0, 0.7) 52vh, black 65vh)',
         }}
       />
       
