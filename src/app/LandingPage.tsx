@@ -41,7 +41,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
                    bg-black/70 hover:bg-black/30 hover:border-white/50 hover:backdrop-blur-xs hover:scale-[1.01] rounded-md transition-all duration-200 ease-out
                    backdrop-blur-[1px] text-xs active:scale-[0.98]"
       >
-        enter here
+        enter
       </motion.button>
     </motion.div>
     </>

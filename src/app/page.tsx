@@ -141,15 +141,25 @@ export default function Home() {
   // Refs for audio functionality
   const previousImageIndexRef = useRef<number>(-1);
   const clickAudioRef = useRef<HTMLAudioElement | null>(null);
+  const backgroundMusicRef = useRef<HTMLAudioElement | null>(null);
 
-  // Initialize audio element
+  // Initialize audio elements
   useEffect(() => {
     clickAudioRef.current = new Audio('/Click.wav');
     clickAudioRef.current.volume = 0.5; // Set volume (0.0 to 1.0)
+    
+    backgroundMusicRef.current = new Audio('/BackgroundMusic.mp3');
+    backgroundMusicRef.current.volume = 0.5; // Set volume to 50%
+    backgroundMusicRef.current.loop = true; // Loop the music
+    
     return () => {
       if (clickAudioRef.current) {
         clickAudioRef.current.pause();
         clickAudioRef.current = null;
+      }
+      if (backgroundMusicRef.current) {
+        backgroundMusicRef.current.pause();
+        backgroundMusicRef.current = null;
       }
     };
   }, []);
@@ -220,6 +230,16 @@ export default function Home() {
     handleScroll();
     return () => window.removeEventListener('scroll', handleScroll);
   }, [normalScrollHeight]);
+
+  // Play background music when user enters the website
+  useEffect(() => {
+    if (!showLanding && backgroundMusicRef.current) {
+      backgroundMusicRef.current.play().catch((error) => {
+        // Ignore errors (e.g., user hasn't interacted with page yet)
+        console.log('Background music play failed:', error);
+      });
+    }
+  }, [showLanding]);
 
   // Hide scroll indicator when user reaches the end
   useEffect(() => {
