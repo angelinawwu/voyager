@@ -42,7 +42,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
                    backdrop-blur-[1px] text-sm md:text-base active:scale-[0.98]"
         style={{ fontFamily: 'var(--font-instrument-serif)' }}
       >
-        click to explore
+        enter here
       </motion.button>
     </motion.div>
     </>
