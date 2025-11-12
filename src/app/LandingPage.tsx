@@ -10,7 +10,8 @@ interface LandingPageProps {
 export default function LandingPage({ onEnter }: LandingPageProps) {
   return (
     <>
-    <div className="fixed w-full h-full z-50">
+    {/* Background Image */}
+    <div className="fixed w-full h-full z-50 scale-90">
         <Image src="/AnimImage/AnimImage-01.jpg" alt="Voyager Golden Record" fill className="object-contain" />
     </div>
     <motion.div
