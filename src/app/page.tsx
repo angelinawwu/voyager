@@ -5,9 +5,10 @@ import Image from 'next/image';
 import { motion, AnimatePresence, useScroll, useTransform } from 'framer-motion';
 import { imageConfigs } from './imageConfig';
 import LandingPage from './LandingPage';
+import { CaretDown } from '@phosphor-icons/react';
 
-const INTRO_HEIGHT = 250; // 250vh for intro (first image rotates)
-const OUTRO_HEIGHT = 250; // 250vh for outro (last image rotates)
+const INTRO_HEIGHT = 500; // 500vh for intro (first image rotates twice - once per text section)
+const OUTRO_HEIGHT = 250; // 250vh for outro (last image rotates once)
 const SCROLL_PER_IMAGE = 0.5; // 50vh per image for middle images
 
 const TEXTS = [
@@ -54,18 +55,18 @@ export default function Home() {
     { clamp: true }
   );
 
-  // Use intro scroll progress for animations (clamped to intro phase)
   // Background opacity: fades in early, stays visible, then fades out
+  // Adjusted for 500vh intro (double the original duration)
   const introBackgroundOpacity = useTransform(
     introScrollProgress,
-    [0.04, 0.08, 0.56, 0.8], // 10vh, 20vh, 140vh, 200vh out of 250vh
+    [0.02, 0.04, 0.78, 0.9], // Adjusted: 10vh, 20vh, 390vh, 450vh out of 500vh
     [0, 0.5, 0.5, 0]
   );
 
   // Outro background opacity: fades in early, stays visible, then fades out
   const outroBackgroundOpacity = useTransform(
     outroScrollProgress,
-    [0.04, 0.08, 0.80, 0.95], // Similar timing to intro
+    [0.04, 0.08, 0.80, 0.95], // 10vh, 20vh, 200vh, 237.5vh out of 250vh
     [0, 0.5, 0.5, 0]
   );
 
@@ -75,37 +76,37 @@ export default function Home() {
     ([intro, outro]) => Math.max(intro as number, outro as number)
   );
 
-  // Text sections with longer hold times and minimal overlap
-  // Section 1: First 35% of intro
+  // Text sections: Each text gets one full rotation (250vh of scroll)
+  // Section 1: First 50% of intro (0-250vh = first full rotation)
   const textSection1Opacity = useTransform(
     introScrollProgress,
-    [0, 0.05, 0.30, 0.35], // 5% fade in, 25% hold, 5% fade out
+    [0, 0.02, 0.48, 0.50], // Fade in quickly, hold, fade out at midpoint
     [0, 1, 1, 0]
   );
 
-  // Section 2: Last part of intro (extends longer since section 3 moved to outro)
+  // Section 2: Second 50% of intro (250vh-500vh = second full rotation)
   const textSection2Opacity = useTransform(
     introScrollProgress,
-    [0.30, 0.35, 0.90, 0.95], // Extended hold time, ends before intro completes
+    [0.48, 0.50, 0.98, 1.0], // Fade in at midpoint, hold, fade out at end
     [0, 1, 1, 0]
   );
 
-  // Section 3: Outro text (appears with last rotating image)
+  // Section 3: Outro text (appears with last rotating image, one full rotation)
   const textSection3Opacity = useTransform(
     outroScrollProgress,
-    [0, 0.05, 0.90, 0.95], // Fades in early during outro, holds, then fades out near end
+    [0, 0.02, 0.93, 0.95], // Fade in early, hold through rotation, fade out near end
     [0, 1, 1, 0]
   );
 
-  // Rotation for first image: 360 degrees over intro phase
-  const introRotationAngle = useTransform(introScrollProgress, [0, 1], [0, 360]);
+  // Rotation for first image: 720 degrees over 500vh intro (2 full rotations)
+  const introRotationAngle = useTransform(introScrollProgress, [0, 1], [0, 720]);
   const firstImageScale = imageConfigs[0]?.scale || 1;
   const firstImageTransform = useTransform(
     introRotationAngle,
     (angle) => `scale(${firstImageScale}) rotate(${angle}deg)`
   );
 
-  // Rotation for last image: 360 degrees over outro phase
+  // Rotation for last image: 360 degrees over 250vh outro (1 full rotation)
   const outroRotationAngle = useTransform(outroScrollProgress, [0, 1], [0, 360]);
   const lastImageScale = imageConfigs[imageConfigs.length - 1]?.scale || 1;
   const lastImageTransform = useTransform(
@@ -385,9 +386,10 @@ export default function Home() {
             initial={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-            className="fixed bottom-8 left-1/2 -translate-x-1/2 text-white text-sm font-light tracking-wide pointer-events-none z-50"
+            className="fixed bottom-8 items-center justify-center left-1/2 -translate-x-1/2 text-white text-sm font-light tracking-wide pointer-events-none z-50"
           >
-            Scroll ↓
+            Scroll
+            <CaretDown size={20} className="text-white mx-auto self-center" />
           </motion.div>
         )}
       </AnimatePresence>
