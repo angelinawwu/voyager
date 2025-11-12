@@ -269,7 +269,7 @@ export default function Home() {
         <>
           {/* Grain filter overlay */}
           <div className="fixed w-full h-full mix-blend-overlay z-999">
-            <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover" />
+            <Image src="/GrainFilter.jpg" alt="Grain Filter" fill className="object-cover saturate-60" />
           </div>
           <div className="fixed w-full h-full bg-black -z-1"></div>
 
@@ -299,7 +299,7 @@ export default function Home() {
           // Apply filters to middle images (not first or last)
           const isMiddleImage = index > 0 && index < imageConfigs.length - 1;
           const filter = isMiddleImage 
-            ? 'grayscale(80%) blur(1px)' // Combine multiple filters here if needed
+            ? 'grayscale(80%) blur(1.5px)' // Combine multiple filters here if needed
             : 'none';
 
           if (shouldRotate) {
