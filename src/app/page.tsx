@@ -7,13 +7,14 @@ import { imageConfigs } from './imageConfig';
 import LandingPage from './LandingPage';
 import { CaretDown } from '@phosphor-icons/react';
 
-const INTRO_HEIGHT = 500; // 500vh for intro (first image rotates twice - once per text section)
-const OUTRO_HEIGHT = 250; // 250vh for outro (last image rotates once)
+const INTRO_HEIGHT = 750; // 750vh for intro (first image rotates 3 times - once per text section)
+const OUTRO_HEIGHT = 500; // 500vh for outro (last image rotates once, with buffer for text timing)
 const SCROLL_PER_IMAGE = 0.5; // 50vh per image for middle images
 
 const TEXTS = [
   "This is the Voyager Golden Record.",
-  "In 1977, it was launched into space with the intention of portraying humanity to intelligent extraterrestrial life.",
+  "In 1977, it was launched into space to represent humanity to intelligent life beyond Earth.",
+  "This is what Earth looks like, inscribed on a disk.",
   '"This is a present from a small, distant world, a token of our sounds, our science, our images, our music, our thoughts and our feelings. We are attempting to survive our time so we may live into yours."',
 ];
 
@@ -59,15 +60,16 @@ export default function Home() {
   // Adjusted for 500vh intro (double the original duration)
   const introBackgroundOpacity = useTransform(
     introScrollProgress,
-    [0.02, 0.04, 0.78, 0.9], // Adjusted: 10vh, 20vh, 390vh, 450vh out of 500vh
-    [0, 0.5, 0.5, 0]
+    [0.02, 0.04, 0.85, 0.98],
+    [0, 0.8, 0.8, 0]
   );
 
   // Outro background opacity: fades in early, stays visible, then fades out
+  // Adjusted for 500vh outro to match intro duration
   const outroBackgroundOpacity = useTransform(
     outroScrollProgress,
-    [0.04, 0.08, 0.80, 0.95], // 10vh, 20vh, 200vh, 237.5vh out of 250vh
-    [0, 0.5, 0.5, 0]
+    [0.25, 0.3, 0.90, 0.98], // Delay start to match text section timing
+    [0, 0.8, 0.8, 0]
   );
 
   // Combined background opacity (intro + outro)
@@ -91,10 +93,11 @@ export default function Home() {
     [0, 1, 1, 0]
   );
 
-  // Section 3: Outro text (appears with last rotating image, one full rotation)
+  // Section 3: Outro text (appears well into outro after last image is visible)
+  // With 500vh outro, delay 25% (125vh) then text visible for 250vh (one rotation worth)
   const textSection3Opacity = useTransform(
     outroScrollProgress,
-    [0, 0.02, 0.93, 0.95], // Fade in early, hold through rotation, fade out near end
+    [0.25, 0.27, 0.73, 0.75], // Start at 25% (125vh buffer), visible for middle 50% (250vh)
     [0, 1, 1, 0]
   );
 
@@ -106,7 +109,7 @@ export default function Home() {
     (angle) => `scale(${firstImageScale}) rotate(${angle}deg)`
   );
 
-  // Rotation for last image: 360 degrees over 250vh outro (1 full rotation)
+  // Rotation for last image: 360 degrees over 500vh outro (slowed down for better text readability)
   const outroRotationAngle = useTransform(outroScrollProgress, [0, 1], [0, 360]);
   const lastImageScale = imageConfigs[imageConfigs.length - 1]?.scale || 1;
   const lastImageTransform = useTransform(
@@ -276,7 +279,7 @@ export default function Home() {
                   opacity: isVisible ? 1 : 0,
                 }}
                 transition={{
-                  duration: 0.05, // Very quick fade (50ms) to match middle images
+                  duration: 0.10, // Very quick fade (50ms) to match middle images
                   ease: 'easeOut',
                 }}
               >
