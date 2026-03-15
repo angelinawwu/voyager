@@ -26,7 +26,7 @@ export default function LandingPage({ onEnter }: LandingPageProps) {
         initial={{ opacity: 0, y: 30 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.8, delay: 0.3, ease: [0.215, 0.61, 0.355, 1] }}
-        className="text-base font-light text-white text-center mb-6 tracking-wide"
+        className="text-sm md:text-base font-light text-white text-center mb-6 tracking-wide"
       >
         The Voyager Golden Record
       </motion.h1> */}

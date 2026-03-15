@@ -301,27 +301,29 @@ export default function Home() {
       {/* Fixed container that holds all overlaid images */}
       <div className="fixed inset-0 scale-90 bg-black">
         {imageConfigs.map((config, index) => {
-          // Determine visibility based on current image index (which is always synced with scroll)
-          // This ensures images show correctly even when scrolling back up
           const isVisible = index === currentImageIndex;
-
-          // Determine if this image should rotate
-          // Important: Check if image is visible AND if it's the first/last image, regardless of exact phase
           const isFirstImage = index === 0;
           const isLastImage = index === imageConfigs.length - 1;
+
+          // Only mount images within a small window of the current index to save memory.
+          // Always keep first and last images mounted for intro/outro rotations.
+          const RENDER_WINDOW = 7;
+          const isNearby = Math.abs(index - currentImageIndex) <= RENDER_WINDOW;
+          if (!isNearby && !isFirstImage && !isLastImage) {
+            return null;
+          }
+
           const isFirstImageRotating = isFirstImage && isVisible;
           const isLastImageRotating = isLastImage && isVisible;
           const shouldRotate = isFirstImageRotating || isLastImageRotating;
           const scaleValue = config.scale || 1;
           
-          // Apply filters to middle images (not first or last)
           const isMiddleImage = index > 0 && index < imageConfigs.length - 1;
           const filter = isMiddleImage 
-            ? 'grayscale(80%) blur(1.5px)' // Combine multiple filters here if needed
+            ? 'grayscale(80%) blur(1.5px)'
             : 'none';
 
           if (shouldRotate) {
-            // First or last image with rotation - use motion.div with MotionValue transform
             const transform = isFirstImageRotating ? firstImageTransform : lastImageTransform;
             return (
               <motion.div
@@ -335,13 +337,13 @@ export default function Home() {
                   pointerEvents: isVisible ? 'auto' : 'none',
                   transform,
                   transformOrigin: 'center center',
-                  filter, // Add filter here
+                  filter,
                 }}
                 animate={{
                   opacity: isVisible ? 1 : 0,
                 }}
                 transition={{
-                  duration: 0.10, // Very quick fade (50ms) to match middle images
+                  duration: 0.10,
                   ease: 'easeOut',
                 }}
               >
@@ -349,15 +351,15 @@ export default function Home() {
                   src={config.src}
                   alt={config.alt}
                   fill
+                  sizes="100vw"
                   style={{ objectFit: config.objectFit }}
-                  priority={index === 0}
-                  quality={100}
+                  priority={isVisible}
+                  quality={75}
                 />
               </motion.div>
             );
           }
 
-          // Middle images - no rotation
           return (
             <motion.div
               key={config.src}
@@ -376,17 +378,18 @@ export default function Home() {
                 opacity: isVisible ? 1 : 0,
               }}
               transition={{
-                duration: 0.05, // Very quick fade (150ms)
-                ease: 'easeOut', // Smooth but quick transition
+                duration: 0.05,
+                ease: 'easeOut',
               }}
             >
               <Image
                 src={config.src}
                 alt={config.alt}
                 fill
+                sizes="100vw"
                 style={{ objectFit: config.objectFit }}
-                priority={index === 0}
-                quality={100}
+                priority={isVisible}
+                quality={75}
               />
             </motion.div>
           );
@@ -409,7 +412,7 @@ export default function Home() {
       style={{ opacity: textSection1Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-lg md:text-xl font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-sm md:text-lg lg:text-xl font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[0]}
       </span>
     </motion.div>
@@ -418,7 +421,7 @@ export default function Home() {
       style={{ opacity: textSection2Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-xs md:text-base lg:text-lg font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[1]}
       </span>
     </motion.div>
@@ -427,7 +430,7 @@ export default function Home() {
       style={{ opacity: textSection3Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg font-light text-center text-white px-8 max-w-[60rem]">
+      <span className="text-xs md:text-base lg:text-lg font-light text-center text-white px-8 max-w-[60rem]">
         {TEXTS[2]}
       </span>
     </motion.div>
@@ -436,7 +439,7 @@ export default function Home() {
       style={{ opacity: textSection4Opacity }}
       className="absolute inset-0 flex items-center justify-center w-full max-w-2xl px-auto"
     >
-      <span className="text-base md:text-lg font-light italic text-center text-white px-8 max-w-[60rem]">
+      <span className="text-xs md:text-base lg:text-lg font-light italic text-center text-white px-8 max-w-[60rem]">
         {TEXTS[3]}
       </span>
     </motion.div>
